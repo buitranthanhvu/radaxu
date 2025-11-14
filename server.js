@@ -251,7 +251,7 @@ app.get('/', (req, res) => {
                         window.speechSynthesis.speak(u); 
                     } 
                 }
-                function testVoice() { playTing(); setTimeout(() => readXu(1234), 500); }
+                function testVoice() { playTing(); setTimeout(() => readXu(999), 500); }
 
                 // --- MAIN LOOP ---
                 async function checkServer() {
@@ -270,3 +270,4 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => { console.log('Server chạy tại port ' + PORT); });
+
