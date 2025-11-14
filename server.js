@@ -42,28 +42,36 @@ app.get('/', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>RADA NO TING</title>
+            <title>RADA VOICE SELECT</title>
             <style>
                 body { 
                     background-color: #121212; color: #e0e0e0; font-family: sans-serif;
                     margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; 
                     height: 100vh; box-sizing: border-box; overflow: hidden;
                 }
+                /* CONTROL HEADER: Đã thêm wrap để xuống dòng nếu màn hình quá nhỏ */
                 .control-header {
-                    display: flex; gap: 10px; align-items: center; margin-bottom: 15px;
+                    display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; margin-bottom: 15px;
                     background: #1e1e1e; padding: 8px 15px; border-radius: 20px; border: 1px solid #333;
+                    width: 100%; max-width: 500px; box-sizing: border-box;
                 }
                 .input-xu {
                     background: #000; border: 1px solid #ff9800; color: #fff;
-                    padding: 5px; font-size: 16px; width: 70px; text-align: center; font-weight: bold; border-radius: 5px;
+                    padding: 5px; font-size: 16px; width: 60px; text-align: center; font-weight: bold; border-radius: 5px;
+                }
+                
+                /* STYLE CHO MENU CHỌN GIỌNG */
+                #voice-select {
+                    background: #333; color: #fff; border: 1px solid #555; 
+                    border-radius: 5px; padding: 5px; max-width: 120px;
+                    font-size: 0.9em;
                 }
 
                 /* --- SPOTLIGHT FIX MOBILE --- */
                 #spotlight-section {
                     display: flex; 
                     width: 100%; max-width: 500px; 
-                    min-height: 180px; 
-                    height: auto; 
+                    min-height: 180px; height: auto; 
                     background: #1e1e1e; border-radius: 12px; border: 1px solid #333;
                     margin-bottom: 20px; flex-direction: column; justify-content: center; align-items: center;
                     overflow: hidden; transition: all 0.3s ease;
@@ -75,10 +83,8 @@ app.get('/', (req, res) => {
                 }
 
                 .active-state { 
-                    width: 100%; 
-                    padding: 20px 15px; box-sizing: border-box;
-                    display: flex; flex-direction: column; 
-                    gap: 10px;
+                    width: 100%; padding: 20px 15px; box-sizing: border-box;
+                    display: flex; flex-direction: column; gap: 10px;
                     background: linear-gradient(135deg, #bf360c 0%, #1e1e1e 100%);
                     border: 2px solid #ff5722;
                     animation: flashEffect 0.3s ease-out;
@@ -94,8 +100,7 @@ app.get('/', (req, res) => {
                     background: #fff; color: #d84315; text-decoration: none; text-align: center;
                     padding: 12px; border-radius: 8px; font-weight: 900; font-size: 1.3em; text-transform: uppercase;
                     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-                    display: block; width: 100%; box-sizing: border-box;
-                    margin-top: 5px;
+                    display: block; width: 100%; box-sizing: border-box; margin-top: 5px;
                 }
 
                 /* LỊCH SỬ */
@@ -117,14 +122,21 @@ app.get('/', (req, res) => {
         <body>
 
             <div class="control-header">
-                <span style="color:#888; font-size:0.9em">Lọc Xu >=</span>
-                <input type="number" id="min-xu-input" class="input-xu" value="600" oninput="updateFilter()">
-                <button id="btn-sound" onclick="activateAudio()" style="margin-left:10px; background:none; border:none; cursor:pointer; font-size:1.2em">🔇</button>
-                <button onclick="testVoice()" style="margin-left:10px; background:none; border:1px solid #444; color:#666; padding:2px 8px; border-radius:4px; cursor:pointer">Test</button>
+                <div style="display:flex; align-items:center; gap:5px">
+                    <span style="color:#888; font-size:0.8em">Xu>=</span>
+                    <input type="number" id="min-xu-input" class="input-xu" value="600" oninput="updateFilter()">
+                </div>
+
+                <select id="voice-select"><option value="">Đang tải giọng...</option></select>
+
+                <div style="display:flex; align-items:center; gap:5px">
+                    <button id="btn-sound" onclick="activateAudio()" style="background:none; border:none; cursor:pointer; font-size:1.2em">🔇</button>
+                    <button onclick="testVoice()" style="background:none; border:1px solid #444; color:#666; padding:2px 8px; border-radius:4px; cursor:pointer; font-size:0.9em">Test</button>
+                </div>
             </div>
 
             <div id="spotlight-section">
-                <div class="waiting-state">🕒 Cô đơn trên sofa</div>
+                <div class="waiting-state">🕒 Chờ xíu nhaaa...</div>
             </div>
 
             <div class="history-label">Lịch sử (Click để vào)</div>
@@ -136,13 +148,45 @@ app.get('/', (req, res) => {
                 let userMinXu = 600; 
                 let audioOn = false;
                 let spotlightTimeout;
+                let voices = []; // Danh sách giọng
 
-                function activateAudio() { 
-                    // Chỉ bật biến cờ, không phát tiếng nữa
-                    audioOn = true; 
-                    document.getElementById('btn-sound').innerText = '🔊'; 
+                // --- HÀM LOAD GIỌNG ---
+                function loadVoices() {
+                    // Lấy danh sách giọng từ trình duyệt
+                    voices = window.speechSynthesis.getVoices();
+                    const voiceSelect = document.getElementById('voice-select');
+                    voiceSelect.innerHTML = '';
+
+                    // Lọc các giọng có chữ 'Viet' hoặc 'vi-VN'
+                    const vnVoices = voices.filter(v => v.lang.includes('vi') || v.name.includes('Viet'));
+
+                    if(vnVoices.length === 0) {
+                        voiceSelect.innerHTML = '<option value="">Ko có giọng Việt</option>';
+                        return;
+                    }
+
+                    vnVoices.forEach((voice, index) => {
+                        const option = document.createElement('option');
+                        // Lưu index của giọng vào value để lát lấy ra
+                        option.value = index; 
+                        option.textContent = voice.name.slice(0, 15) + '...'; // Cắt tên ngắn cho đẹp
+                        
+                        // Ưu tiên chọn mặc định là Google hoặc Microsoft (thường là nữ)
+                        if (voice.name.includes('Google') || voice.name.includes('Microsoft')) {
+                            option.selected = true;
+                        }
+                        voiceSelect.appendChild(option);
+                    });
                 }
-                
+
+                // Một số trình duyệt cần chờ sự kiện này mới load được giọng
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = loadVoices;
+                }
+                // Gọi luôn 1 lần cho chắc
+                loadVoices();
+
+                function activateAudio() { audioOn = true; document.getElementById('btn-sound').innerText = '🔊'; }
                 function updateFilter() { userMinXu = parseInt(document.getElementById('min-xu-input').value) || 0; renderUI(); }
 
                 function renderUI() {
@@ -165,16 +209,13 @@ app.get('/', (req, res) => {
                             spotHtml += '</div>';
                             spotlight.innerHTML = spotHtml;
 
-                            // CHỈ ĐỌC SỐ XU, KHÔNG TING, ÂM LƯỢNG NHỎ
-                            if(audioOn) { 
-                                readXu(topItem.xu); 
-                            }
+                            if(audioOn) readXu(topItem.xu);
                             
                             lastSignature = currentSig;
 
                             if (spotlightTimeout) clearTimeout(spotlightTimeout);
                             spotlightTimeout = setTimeout(() => {
-                                spotlight.innerHTML = '<div class="waiting-state">🕒 Cô đơn trên sofa</div>';
+                                spotlight.innerHTML = '<div class="waiting-state">🕒 Chờ xíu nhaaa...</div>';
                             }, 1000); 
                         }
                     }
@@ -199,19 +240,24 @@ app.get('/', (req, res) => {
                     if('speechSynthesis' in window) { 
                         window.speechSynthesis.cancel(); 
                         const u = new SpeechSynthesisUtterance(n + " xu"); 
-                        u.lang='vi-VN'; 
+                        
+                        // --- CHỌN GIỌNG TỪ MENU ---
+                        const voiceSelect = document.getElementById('voice-select');
+                        const vnVoices = voices.filter(v => v.lang.includes('vi') || v.name.includes('Viet'));
+                        
+                        // Lấy giọng mà người dùng đang chọn
+                        if (vnVoices.length > 0 && voiceSelect.value !== "") {
+                            u.voice = vnVoices[voiceSelect.value];
+                        }
+
+                        u.lang = 'vi-VN'; 
                         u.rate = 1.1; 
-                        
-                        // --- CHỈNH ÂM LƯỢNG TẠI ĐÂY ---
-                        u.volume = 1; // 50% âm lượng
-                        
+                        u.volume = 0.5; // 50% âm lượng
                         window.speechSynthesis.speak(u); 
                     } 
                 }
 
-                function testVoice() { 
-                    readXu(100000); 
-                }
+                function testVoice() { readXu(1234); }
 
                 async function checkServer() {
                     try {
@@ -229,5 +275,3 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => { console.log('Server running on ' + PORT); });
-
-
