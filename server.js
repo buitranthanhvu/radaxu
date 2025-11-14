@@ -42,17 +42,17 @@ app.get('/', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>RADA TOGGLE VOICE</title>
+            <title>RADA FINAL</title>
             <style>
                 body { 
                     background-color: #121212; color: #e0e0e0; font-family: sans-serif;
                     margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; 
                     height: 100vh; box-sizing: border-box; overflow: hidden;
                 }
-                /* CONTROL HEADER */
+                /* HEADER GỌN GÀNG */
                 .control-header {
-                    display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; margin-bottom: 15px;
-                    background: #1e1e1e; padding: 8px 15px; border-radius: 20px; border: 1px solid #333;
+                    display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: center; margin-bottom: 15px;
+                    background: #1e1e1e; padding: 8px 20px; border-radius: 30px; border: 1px solid #333;
                     width: 100%; max-width: 500px; box-sizing: border-box;
                 }
                 .input-xu {
@@ -60,19 +60,14 @@ app.get('/', (req, res) => {
                     padding: 5px; font-size: 16px; width: 60px; text-align: center; font-weight: bold; border-radius: 5px;
                 }
                 
-                /* MENU CHỌN GIỌNG */
-                #voice-select {
-                    background: #333; color: #fff; border: 1px solid #555; 
-                    border-radius: 5px; padding: 5px; max-width: 120px; font-size: 0.9em;
-                }
-
-                /* NÚT LOA: Mặc định xám */
+                /* NÚT LOA */
                 #btn-sound {
-                    background: none; border: none; cursor: pointer; font-size: 1.4em;
-                    color: #666; transition: all 0.2s;
+                    background: none; border: none; cursor: pointer; font-size: 1.5em;
+                    color: #666; transition: all 0.2s; display: flex; align-items: center;
                 }
+                #btn-sound:hover { transform: scale(1.1); }
 
-                /* --- SPOTLIGHT --- */
+                /* --- SPOTLIGHT FIX MOBILE --- */
                 #spotlight-section {
                     display: flex; 
                     width: 100%; max-width: 500px; 
@@ -128,17 +123,11 @@ app.get('/', (req, res) => {
 
             <div class="control-header">
                 <div style="display:flex; align-items:center; gap:5px">
-                    <span style="color:#888; font-size:0.8em">Xu>=</span>
+                    <span style="color:#888; font-size:0.8em">Xu >=</span>
                     <input type="number" id="min-xu-input" class="input-xu" value="600" oninput="updateFilter()">
                 </div>
 
-                <select id="voice-select"><option value="">Đang tải giọng...</option></select>
-
-                <div style="display:flex; align-items:center; gap:5px">
-                    <button id="btn-sound" onclick="toggleSound()" title="Bật/Tắt đọc xu">🔇</button>
-                    
-                    <button onclick="testVoice()" style="background:none; border:1px solid #444; color:#666; padding:2px 8px; border-radius:4px; cursor:pointer; font-size:0.9em">Test</button>
-                </div>
+                <button id="btn-sound" onclick="toggleSound()" title="Bật/Tắt đọc xu">🔇</button>
             </div>
 
             <div id="spotlight-section">
@@ -154,51 +143,17 @@ app.get('/', (req, res) => {
                 let userMinXu = 600; 
                 let audioOn = false; // Mặc định tắt
                 let spotlightTimeout;
-                let voices = [];
 
-                // HÀM LOAD GIỌNG
-                function loadVoices() {
-                    voices = window.speechSynthesis.getVoices();
-                    const voiceSelect = document.getElementById('voice-select');
-                    voiceSelect.innerHTML = '';
-                    const vnVoices = voices.filter(v => v.lang.includes('vi') || v.name.includes('Viet'));
-                    if(vnVoices.length === 0) {
-                        voiceSelect.innerHTML = '<option value="">Ko có giọng Việt</option>';
-                        return;
-                    }
-                    vnVoices.forEach((voice, index) => {
-                        const option = document.createElement('option');
-                        option.value = index; 
-                        option.textContent = voice.name.slice(0, 15) + '...'; 
-                        if (voice.name.includes('Google') || voice.name.includes('Microsoft')) {
-                            option.selected = true;
-                        }
-                        voiceSelect.appendChild(option);
-                    });
-                }
-                if (speechSynthesis.onvoiceschanged !== undefined) {
-                    speechSynthesis.onvoiceschanged = loadVoices;
-                }
-                loadVoices();
-
-                // --- HÀM BẬT/TẮT ÂM THANH (MỚI) ---
+                // --- HÀM BẬT/TẮT ÂM THANH ---
                 function toggleSound() {
-                    // Đảo ngược trạng thái
                     audioOn = !audioOn;
-                    
                     const btn = document.getElementById('btn-sound');
-                    
                     if (audioOn) {
-                        // NẾU BẬT
                         btn.innerText = '🔊';
-                        btn.style.color = '#4CAF50'; // Xanh lá
-                        // Đọc thử 1 cái nhẹ để kích hoạt loa trên mobile
-                        // readXu("Đã bật"); 
+                        btn.style.color = '#4CAF50';
                     } else {
-                        // NẾU TẮT
                         btn.innerText = '🔇';
-                        btn.style.color = '#666'; // Xám
-                        // Ngắt ngay lập tức nếu đang đọc dở
+                        btn.style.color = '#666';
                         window.speechSynthesis.cancel();
                     }
                 }
@@ -210,6 +165,7 @@ app.get('/', (req, res) => {
                     const historyList = document.getElementById('history-list');
                     const filteredList = currentData.filter(item => item.xu >= userMinXu);
 
+                    // SPOTLIGHT LOGIC
                     if (filteredList.length > 0) {
                         const topItem = filteredList[0];
                         const currentSig = topItem.shop + topItem.xu + topItem.meta;
@@ -225,7 +181,6 @@ app.get('/', (req, res) => {
                             spotHtml += '</div>';
                             spotlight.innerHTML = spotHtml;
 
-                            // CHỈ ĐỌC NẾU BIẾN CỜ audioOn LÀ TRUE
                             if(audioOn) {
                                 readXu(topItem.xu);
                             }
@@ -239,6 +194,7 @@ app.get('/', (req, res) => {
                         }
                     }
 
+                    // HISTORY LOGIC
                     let listHtml = '';
                     if (filteredList.length === 0) {
                         listHtml = '<div style="padding:20px; text-align:center; color:#444">Không có tin >= ' + userMinXu + ' xu</div>';
@@ -259,17 +215,13 @@ app.get('/', (req, res) => {
                     if('speechSynthesis' in window) { 
                         window.speechSynthesis.cancel(); 
                         const u = new SpeechSynthesisUtterance(n + " xu"); 
-                        const voiceSelect = document.getElementById('voice-select');
-                        const vnVoices = voices.filter(v => v.lang.includes('vi') || v.name.includes('Viet'));
-                        if (vnVoices.length > 0 && voiceSelect.value !== "") {
-                            u.voice = vnVoices[voiceSelect.value];
-                        }
-                        u.lang = 'vi-VN'; u.rate = 1.1; u.volume = 1; 
+                        // Giọng mặc định, không chọn
+                        u.lang = 'vi-VN'; 
+                        u.rate = 1.1; 
+                        u.volume = 1; 
                         window.speechSynthesis.speak(u); 
                     } 
                 }
-
-                function testVoice() { readXu(100000); }
 
                 async function checkServer() {
                     try {
@@ -287,4 +239,3 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => { console.log('Server running on ' + PORT); });
-
