@@ -164,7 +164,7 @@ app.get('/', (req, res) => {
 
                             if (spotlightTimeout) clearTimeout(spotlightTimeout);
                             spotlightTimeout = setTimeout(() => {
-                                spotlight.innerHTML = '<div class="waiting-state">🕒 Chờ xíu nhaaa...</div>';
+                                spotlight.innerHTML = '<div class="waiting-state">🕒 Cô đơn trên sofa</div>';
                             }, 1000); 
                         }
                     }
@@ -213,5 +213,6 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => { console.log('Server running on ' + PORT); });
+
 
 
