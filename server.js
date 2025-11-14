@@ -264,7 +264,7 @@ app.get('/', (req, res) => {
                         if (vnVoices.length > 0 && voiceSelect.value !== "") {
                             u.voice = vnVoices[voiceSelect.value];
                         }
-                        u.lang = 'vi-VN'; u.rate = 1.1; u.volume = 0.5; 
+                        u.lang = 'vi-VN'; u.rate = 1.1; u.volume = 1; 
                         window.speechSynthesis.speak(u); 
                     } 
                 }
@@ -287,3 +287,4 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => { console.log('Server running on ' + PORT); });
+
