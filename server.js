@@ -177,7 +177,7 @@ app.get('/', (req, res) => {
                             spotHtml += '<div class="spotlight-xu">' + topItem.xu + '</div>';
                             spotHtml += '</div>';
                             spotHtml += '<div class="spotlight-meta">' + topItem.meta + '</div>';
-                            spotHtml += '<a href="' + (topItem.link || 'https://shopee.vn/live') + '" target="_blank" class="btn-spotlight">VÀO LIVE NGAY</a>';
+                            spotHtml += '<a href="' + (topItem.link || 'https://shopee.vn/live') + '" target="_blank" class="btn-spotlight">BAY VÀO</a>';
                             spotHtml += '</div>';
                             spotlight.innerHTML = spotHtml;
 
@@ -239,3 +239,4 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => { console.log('Server running on ' + PORT); });
+
