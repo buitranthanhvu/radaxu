@@ -42,7 +42,7 @@ app.get('/', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>RADA MOBILE FIX</title>
+            <title>RADA NO TING</title>
             <style>
                 body { 
                     background-color: #121212; color: #e0e0e0; font-family: sans-serif;
@@ -62,11 +62,8 @@ app.get('/', (req, res) => {
                 #spotlight-section {
                     display: flex; 
                     width: 100%; max-width: 500px; 
-                    
-                    /* THAY ĐỔI QUAN TRỌNG: Dùng min-height thay vì height cố định */
                     min-height: 180px; 
-                    height: auto; /* Để khung tự giãn nở nếu chữ to quá */
-                    
+                    height: auto; 
                     background: #1e1e1e; border-radius: 12px; border: 1px solid #333;
                     margin-bottom: 20px; flex-direction: column; justify-content: center; align-items: center;
                     overflow: hidden; transition: all 0.3s ease;
@@ -79,12 +76,9 @@ app.get('/', (req, res) => {
 
                 .active-state { 
                     width: 100%; 
-                    /* Bỏ height: 100% để nó tự do giãn nở */
-                    padding: 20px 15px; /* Tăng padding trên dưới */
-                    box-sizing: border-box;
+                    padding: 20px 15px; box-sizing: border-box;
                     display: flex; flex-direction: column; 
-                    gap: 10px; /* Tạo khoảng cách an toàn giữa các dòng */
-                    
+                    gap: 10px;
                     background: linear-gradient(135deg, #bf360c 0%, #1e1e1e 100%);
                     border: 2px solid #ff5722;
                     animation: flashEffect 0.3s ease-out;
@@ -92,12 +86,8 @@ app.get('/', (req, res) => {
                 @keyframes flashEffect { from { opacity: 0.5; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
                 .spotlight-top { display: flex; justify-content: space-between; align-items: flex-start; }
-                
-                /* Fix tên shop dài quá thì xuống dòng đàng hoàng */
                 .spotlight-shop { font-size: 1.2em; color: #fff; font-weight: bold; max-width: 60%; line-height: 1.3; word-wrap: break-word;}
-                
                 .spotlight-xu { font-size: 3.5em; color: #ffff00; font-weight: 900; line-height: 1; text-shadow: 0 0 20px #ffeb3b; }
-                
                 .spotlight-meta { font-size: 0.9em; color: #ddd; } 
                 
                 .btn-spotlight {
@@ -105,7 +95,7 @@ app.get('/', (req, res) => {
                     padding: 12px; border-radius: 8px; font-weight: 900; font-size: 1.3em; text-transform: uppercase;
                     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
                     display: block; width: 100%; box-sizing: border-box;
-                    margin-top: 5px; /* Đẩy cách dòng trên một chút */
+                    margin-top: 5px;
                 }
 
                 /* LỊCH SỬ */
@@ -147,7 +137,12 @@ app.get('/', (req, res) => {
                 let audioOn = false;
                 let spotlightTimeout;
 
-                function activateAudio() { playTing(); audioOn = true; document.getElementById('btn-sound').innerText = '🔊'; }
+                function activateAudio() { 
+                    // Chỉ bật biến cờ, không phát tiếng nữa
+                    audioOn = true; 
+                    document.getElementById('btn-sound').innerText = '🔊'; 
+                }
+                
                 function updateFilter() { userMinXu = parseInt(document.getElementById('min-xu-input').value) || 0; renderUI(); }
 
                 function renderUI() {
@@ -170,7 +165,11 @@ app.get('/', (req, res) => {
                             spotHtml += '</div>';
                             spotlight.innerHTML = spotHtml;
 
-                            if(audioOn) { playTing(); setTimeout(() => readXu(topItem.xu), 300); }
+                            // CHỈ ĐỌC SỐ XU, KHÔNG TING, ÂM LƯỢNG NHỎ
+                            if(audioOn) { 
+                                readXu(topItem.xu); 
+                            }
+                            
                             lastSignature = currentSig;
 
                             if (spotlightTimeout) clearTimeout(spotlightTimeout);
@@ -196,17 +195,23 @@ app.get('/', (req, res) => {
                     historyList.innerHTML = listHtml;
                 }
 
-                function playTing() {
-                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    const osc = ctx.createOscillator(); const gain = ctx.createGain();
-                    osc.connect(gain); gain.connect(ctx.destination);
-                    osc.type = 'sine'; osc.frequency.setValueAtTime(1000, ctx.currentTime);
-                    gain.gain.setValueAtTime(0.8, ctx.currentTime); 
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.5);
-                    osc.start(); osc.stop(ctx.currentTime+0.5);
+                function readXu(n) { 
+                    if('speechSynthesis' in window) { 
+                        window.speechSynthesis.cancel(); 
+                        const u = new SpeechSynthesisUtterance(n + " xu"); 
+                        u.lang='vi-VN'; 
+                        u.rate = 1.1; 
+                        
+                        // --- CHỈNH ÂM LƯỢNG TẠI ĐÂY ---
+                        u.volume = 0.5; // 50% âm lượng
+                        
+                        window.speechSynthesis.speak(u); 
+                    } 
                 }
-                function readXu(n) { if('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(n+" xu"); u.lang='vi-VN'; u.rate=1.1; u.volume=1; window.speechSynthesis.speak(u); } }
-                function testVoice() { playTing(); setTimeout(() => readXu(100000), 500); }
+
+                function testVoice() { 
+                    readXu(10000); 
+                }
 
                 async function checkServer() {
                     try {
