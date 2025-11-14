@@ -203,14 +203,14 @@ app.get('/', (req, res) => {
                         u.rate = 1.1; 
                         
                         // --- CHỈNH ÂM LƯỢNG TẠI ĐÂY ---
-                        u.volume = 0.5; // 50% âm lượng
+                        u.volume = 0.8; // 50% âm lượng
                         
                         window.speechSynthesis.speak(u); 
                     } 
                 }
 
                 function testVoice() { 
-                    readXu(10000); 
+                    readXu(100000); 
                 }
 
                 async function checkServer() {
@@ -229,3 +229,4 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => { console.log('Server running on ' + PORT); });
+
