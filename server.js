@@ -123,7 +123,7 @@ app.get('/', (req, res) => {
             </div>
 
             <div id="spotlight-section">
-                <div class="waiting-state">🕒 Cô đơn</div>
+                <div class="waiting-state">🕒 Cô đơn trên sofa</div>
             </div>
 
             <div class="history-label">Lịch sử (Click để vào)</div>
@@ -213,3 +213,4 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => { console.log('Server running on ' + PORT); });
+
