@@ -115,7 +115,7 @@ app.get('/', (req, res) => {
                     osc.start(); osc.stop(ctx.currentTime+0.5);
                 }
                 function readXu(n) { if('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(n+" xu"); u.lang='vi-VN'; u.rate=1.1; u.volume=1; window.speechSynthesis.speak(u); } }
-                function testVoice() { playTing(); setTimeout(() => readXu(1234), 500); }
+                function testVoice() { playTing(); setTimeout(() => readXu(999), 500); }
                 async function checkServer() {
                     try {
                         const now = new Date(); document.getElementById('status').innerText = "Cập nhật: " + now.toLocaleTimeString();
@@ -130,5 +130,6 @@ app.get('/', (req, res) => {
         </html>
     `);
 });
+
 
 app.listen(PORT, () => { console.log('Running on port ' + PORT); });
