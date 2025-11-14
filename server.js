@@ -42,7 +42,7 @@ app.get('/', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>RADA FIX LAYOUT</title>
+            <title>RADA MOBILE FIX</title>
             <style>
                 body { 
                     background-color: #121212; color: #e0e0e0; font-family: sans-serif;
@@ -58,12 +58,15 @@ app.get('/', (req, res) => {
                     padding: 5px; font-size: 16px; width: 70px; text-align: center; font-weight: bold; border-radius: 5px;
                 }
 
-                /* --- SPOTLIGHT --- */
+                /* --- SPOTLIGHT FIX MOBILE --- */
                 #spotlight-section {
                     display: flex; 
                     width: 100%; max-width: 500px; 
-                    /* TĂNG CHIỀU CAO LÊN 200px ĐỂ KHÔNG BỊ MẤT NÚT */
-                    height: 200px; 
+                    
+                    /* THAY ĐỔI QUAN TRỌNG: Dùng min-height thay vì height cố định */
+                    min-height: 180px; 
+                    height: auto; /* Để khung tự giãn nở nếu chữ to quá */
+                    
                     background: #1e1e1e; border-radius: 12px; border: 1px solid #333;
                     margin-bottom: 20px; flex-direction: column; justify-content: center; align-items: center;
                     overflow: hidden; transition: all 0.3s ease;
@@ -71,30 +74,38 @@ app.get('/', (req, res) => {
 
                 .waiting-state { 
                     color: #555; font-size: 1.5em; display: flex; align-items: center; gap: 10px; 
-                    font-weight: bold; letter-spacing: 1px;
+                    font-weight: bold; letter-spacing: 1px; padding: 20px;
                 }
 
                 .active-state { 
-                    width: 100%; height: 100%; padding: 15px; box-sizing: border-box;
-                    display: flex; flex-direction: column; justify-content: space-between; /* Căn đều trên dưới */
+                    width: 100%; 
+                    /* Bỏ height: 100% để nó tự do giãn nở */
+                    padding: 20px 15px; /* Tăng padding trên dưới */
+                    box-sizing: border-box;
+                    display: flex; flex-direction: column; 
+                    gap: 10px; /* Tạo khoảng cách an toàn giữa các dòng */
+                    
                     background: linear-gradient(135deg, #bf360c 0%, #1e1e1e 100%);
                     border: 2px solid #ff5722;
                     animation: flashEffect 0.3s ease-out;
                 }
                 @keyframes flashEffect { from { opacity: 0.5; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-                .spotlight-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
-                .spotlight-shop { font-size: 1.2em; color: #fff; font-weight: bold; max-width: 65%; line-height: 1.2; }
-                /* Giảm size xu một chút xíu để đỡ chèn ép các thành phần khác */
-                .spotlight-xu { font-size: 3.2em; color: #ffff00; font-weight: 900; line-height: 1; text-shadow: 0 0 20px #ffeb3b; }
+                .spotlight-top { display: flex; justify-content: space-between; align-items: flex-start; }
                 
-                .spotlight-meta { font-size: 0.9em; color: #ddd; margin-bottom: auto; } /* Đẩy nút xuống đáy */
+                /* Fix tên shop dài quá thì xuống dòng đàng hoàng */
+                .spotlight-shop { font-size: 1.2em; color: #fff; font-weight: bold; max-width: 60%; line-height: 1.3; word-wrap: break-word;}
+                
+                .spotlight-xu { font-size: 3.5em; color: #ffff00; font-weight: 900; line-height: 1; text-shadow: 0 0 20px #ffeb3b; }
+                
+                .spotlight-meta { font-size: 0.9em; color: #ddd; } 
                 
                 .btn-spotlight {
                     background: #fff; color: #d84315; text-decoration: none; text-align: center;
-                    padding: 14px; border-radius: 8px; font-weight: 900; font-size: 1.5em; text-transform: uppercase;
+                    padding: 12px; border-radius: 8px; font-weight: 900; font-size: 1.3em; text-transform: uppercase;
                     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
                     display: block; width: 100%; box-sizing: border-box;
+                    margin-top: 5px; /* Đẩy cách dòng trên một chút */
                 }
 
                 /* LỊCH SỬ */
@@ -195,7 +206,7 @@ app.get('/', (req, res) => {
                     osc.start(); osc.stop(ctx.currentTime+0.5);
                 }
                 function readXu(n) { if('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(n+" xu"); u.lang='vi-VN'; u.rate=1.1; u.volume=1; window.speechSynthesis.speak(u); } }
-                function testVoice() { playTing(); setTimeout(() => readXu(10000), 500); }
+                function testVoice() { playTing(); setTimeout(() => readXu(100000), 500); }
 
                 async function checkServer() {
                     try {
@@ -213,6 +224,3 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => { console.log('Server running on ' + PORT); });
-
-
-
