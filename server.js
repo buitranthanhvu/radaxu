@@ -42,14 +42,14 @@ app.get('/', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>RADA VOICE SELECT</title>
+            <title>RADA TOGGLE VOICE</title>
             <style>
                 body { 
                     background-color: #121212; color: #e0e0e0; font-family: sans-serif;
                     margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; 
                     height: 100vh; box-sizing: border-box; overflow: hidden;
                 }
-                /* CONTROL HEADER: Đã thêm wrap để xuống dòng nếu màn hình quá nhỏ */
+                /* CONTROL HEADER */
                 .control-header {
                     display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; margin-bottom: 15px;
                     background: #1e1e1e; padding: 8px 15px; border-radius: 20px; border: 1px solid #333;
@@ -60,14 +60,19 @@ app.get('/', (req, res) => {
                     padding: 5px; font-size: 16px; width: 60px; text-align: center; font-weight: bold; border-radius: 5px;
                 }
                 
-                /* STYLE CHO MENU CHỌN GIỌNG */
+                /* MENU CHỌN GIỌNG */
                 #voice-select {
                     background: #333; color: #fff; border: 1px solid #555; 
-                    border-radius: 5px; padding: 5px; max-width: 120px;
-                    font-size: 0.9em;
+                    border-radius: 5px; padding: 5px; max-width: 120px; font-size: 0.9em;
                 }
 
-                /* --- SPOTLIGHT FIX MOBILE --- */
+                /* NÚT LOA: Mặc định xám */
+                #btn-sound {
+                    background: none; border: none; cursor: pointer; font-size: 1.4em;
+                    color: #666; transition: all 0.2s;
+                }
+
+                /* --- SPOTLIGHT --- */
                 #spotlight-section {
                     display: flex; 
                     width: 100%; max-width: 500px; 
@@ -130,13 +135,14 @@ app.get('/', (req, res) => {
                 <select id="voice-select"><option value="">Đang tải giọng...</option></select>
 
                 <div style="display:flex; align-items:center; gap:5px">
-                    <button id="btn-sound" onclick="activateAudio()" style="background:none; border:none; cursor:pointer; font-size:1.2em">🔇</button>
+                    <button id="btn-sound" onclick="toggleSound()" title="Bật/Tắt đọc xu">🔇</button>
+                    
                     <button onclick="testVoice()" style="background:none; border:1px solid #444; color:#666; padding:2px 8px; border-radius:4px; cursor:pointer; font-size:0.9em">Test</button>
                 </div>
             </div>
 
             <div id="spotlight-section">
-                <div class="waiting-state">🕒 Chờ xíu nhaaa...</div>
+                <div class="waiting-state">🕒 Cô đơn trên Sofa</div>
             </div>
 
             <div class="history-label">Lịch sử (Click để vào)</div>
@@ -146,47 +152,57 @@ app.get('/', (req, res) => {
                 let lastSignature = ""; 
                 let currentData = []; 
                 let userMinXu = 600; 
-                let audioOn = false;
+                let audioOn = false; // Mặc định tắt
                 let spotlightTimeout;
-                let voices = []; // Danh sách giọng
+                let voices = [];
 
-                // --- HÀM LOAD GIỌNG ---
+                // HÀM LOAD GIỌNG
                 function loadVoices() {
-                    // Lấy danh sách giọng từ trình duyệt
                     voices = window.speechSynthesis.getVoices();
                     const voiceSelect = document.getElementById('voice-select');
                     voiceSelect.innerHTML = '';
-
-                    // Lọc các giọng có chữ 'Viet' hoặc 'vi-VN'
                     const vnVoices = voices.filter(v => v.lang.includes('vi') || v.name.includes('Viet'));
-
                     if(vnVoices.length === 0) {
                         voiceSelect.innerHTML = '<option value="">Ko có giọng Việt</option>';
                         return;
                     }
-
                     vnVoices.forEach((voice, index) => {
                         const option = document.createElement('option');
-                        // Lưu index của giọng vào value để lát lấy ra
                         option.value = index; 
-                        option.textContent = voice.name.slice(0, 15) + '...'; // Cắt tên ngắn cho đẹp
-                        
-                        // Ưu tiên chọn mặc định là Google hoặc Microsoft (thường là nữ)
+                        option.textContent = voice.name.slice(0, 15) + '...'; 
                         if (voice.name.includes('Google') || voice.name.includes('Microsoft')) {
                             option.selected = true;
                         }
                         voiceSelect.appendChild(option);
                     });
                 }
-
-                // Một số trình duyệt cần chờ sự kiện này mới load được giọng
                 if (speechSynthesis.onvoiceschanged !== undefined) {
                     speechSynthesis.onvoiceschanged = loadVoices;
                 }
-                // Gọi luôn 1 lần cho chắc
                 loadVoices();
 
-                function activateAudio() { audioOn = true; document.getElementById('btn-sound').innerText = '🔊'; }
+                // --- HÀM BẬT/TẮT ÂM THANH (MỚI) ---
+                function toggleSound() {
+                    // Đảo ngược trạng thái
+                    audioOn = !audioOn;
+                    
+                    const btn = document.getElementById('btn-sound');
+                    
+                    if (audioOn) {
+                        // NẾU BẬT
+                        btn.innerText = '🔊';
+                        btn.style.color = '#4CAF50'; // Xanh lá
+                        // Đọc thử 1 cái nhẹ để kích hoạt loa trên mobile
+                        // readXu("Đã bật"); 
+                    } else {
+                        // NẾU TẮT
+                        btn.innerText = '🔇';
+                        btn.style.color = '#666'; // Xám
+                        // Ngắt ngay lập tức nếu đang đọc dở
+                        window.speechSynthesis.cancel();
+                    }
+                }
+                
                 function updateFilter() { userMinXu = parseInt(document.getElementById('min-xu-input').value) || 0; renderUI(); }
 
                 function renderUI() {
@@ -209,13 +225,16 @@ app.get('/', (req, res) => {
                             spotHtml += '</div>';
                             spotlight.innerHTML = spotHtml;
 
-                            if(audioOn) readXu(topItem.xu);
+                            // CHỈ ĐỌC NẾU BIẾN CỜ audioOn LÀ TRUE
+                            if(audioOn) {
+                                readXu(topItem.xu);
+                            }
                             
                             lastSignature = currentSig;
 
                             if (spotlightTimeout) clearTimeout(spotlightTimeout);
                             spotlightTimeout = setTimeout(() => {
-                                spotlight.innerHTML = '<div class="waiting-state">🕒 Chờ xíu nhaaa...</div>';
+                                spotlight.innerHTML = '<div class="waiting-state">🕒 Cô đơn trên Sofa</div>';
                             }, 1000); 
                         }
                     }
@@ -240,24 +259,17 @@ app.get('/', (req, res) => {
                     if('speechSynthesis' in window) { 
                         window.speechSynthesis.cancel(); 
                         const u = new SpeechSynthesisUtterance(n + " xu"); 
-                        
-                        // --- CHỌN GIỌNG TỪ MENU ---
                         const voiceSelect = document.getElementById('voice-select');
                         const vnVoices = voices.filter(v => v.lang.includes('vi') || v.name.includes('Viet'));
-                        
-                        // Lấy giọng mà người dùng đang chọn
                         if (vnVoices.length > 0 && voiceSelect.value !== "") {
                             u.voice = vnVoices[voiceSelect.value];
                         }
-
-                        u.lang = 'vi-VN'; 
-                        u.rate = 1.1; 
-                        u.volume = 0.5; // 50% âm lượng
+                        u.lang = 'vi-VN'; u.rate = 1.1; u.volume = 0.5; 
                         window.speechSynthesis.speak(u); 
                     } 
                 }
 
-                function testVoice() { readXu(1234); }
+                function testVoice() { readXu(100000); }
 
                 async function checkServer() {
                     try {
