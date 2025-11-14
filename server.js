@@ -2,34 +2,29 @@ const express = require('express');
 const axios = require('axios');
 const app = express();
 
-// Cấu hình Port cho Render
 const PORT = process.env.PORT || 3000;
 const DATA_URL = 'https://shopee.vintrasolution.net/data.json';
 const SERVER_MIN_FILTER = 100; 
 
-// Hàm xử lý dữ liệu đầu vào
 function parseItem(item) {
     if (!item || !item.xu) return null;
     const numberStr = item.xu.replace(/\D/g, '');
     const coinValue = parseInt(numberStr) || 0;
-    
     return {
         xu: coinValue,
         originalText: item.xu,
         shop: item.shop || "Shop Bí Ẩn",
-        meta: item.meta || "",
+        meta: item.meta || "", 
         link: item.link || item.url || item.href || "https://shopee.vn/live" 
     };
 }
 
-// API lấy dữ liệu
 app.get('/api/check-xu', async (req, res) => {
     try {
         const timestamp = new Date().getTime();
         const response = await axios.get(`${DATA_URL}?t=${timestamp}`);
         const data = response.data;
         let rawHistory = [];
-
         if (Array.isArray(data) && data.length > 0) {
             const allItems = data.map(raw => parseItem(raw)).filter(i => i !== null);
             rawHistory = allItems.filter(item => item.xu >= SERVER_MIN_FILTER).slice(0, 50);
@@ -40,7 +35,6 @@ app.get('/api/check-xu', async (req, res) => {
     }
 });
 
-// Giao diện chính (Đã viết lại theo kiểu an toàn tuyệt đối)
 app.get('/', (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -48,7 +42,7 @@ app.get('/', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>RADA XU VIP</title>
+            <title>RADA FLASH 1S</title>
             <style>
                 body { 
                     background-color: #121212; color: #e0e0e0; font-family: sans-serif;
@@ -61,35 +55,38 @@ app.get('/', (req, res) => {
                 }
                 .input-xu {
                     background: #000; border: 1px solid #ff9800; color: #fff;
-                    padding: 5px; font-size: 16px; width: 70px; text-align: center;
-                    font-weight: bold; border-radius: 5px;
+                    padding: 5px; font-size: 16px; width: 70px; text-align: center; font-weight: bold; border-radius: 5px;
                 }
-                /* PHẦN 1: SPOTLIGHT */
+
+                /* SPOTLIGHT: Mặc định ẩn đi (display: none) */
                 #spotlight-section {
+                    display: none; /* <--- QUAN TRỌNG: Mặc định ẩn */
                     width: 100%; max-width: 500px; height: 160px;
                     background: #1e1e1e; border-radius: 12px; border: 1px solid #333;
-                    margin-bottom: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.5); overflow: hidden;
+                    margin-bottom: 20px; flex-direction: column; justify-content: center; align-items: center;
+                    box-shadow: 0 0 30px rgba(255, 87, 34, 0.8); overflow: hidden;
+                    animation: popIn 0.3s ease-out;
                 }
-                .waiting-state { color: #666; font-size: 1.5em; }
+                @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
                 .active-state { 
                     width: 100%; height: 100%; padding: 15px; box-sizing: border-box;
                     display: flex; flex-direction: column; justify-content: space-between; 
-                    background: linear-gradient(135deg, #3e2723 0%, #1e1e1e 100%); border: 2px solid #ff5722;
+                    background: linear-gradient(135deg, #bf360c 0%, #1e1e1e 100%); /* Nền đỏ đậm hơn cho gắt */
+                    border: 2px solid #ff5722;
                 }
                 .spotlight-top { display: flex; justify-content: space-between; align-items: flex-start; }
-                .spotlight-shop { font-size: 1.1em; color: #ffccbc; font-weight: bold; max-width: 70%; }
-                .spotlight-xu { font-size: 3em; color: #ffff00; font-weight: 900; line-height: 1; text-shadow: 0 0 15px #ff9800; }
-                .spotlight-meta { font-size: 0.9em; color: #aaa; margin-top: 5px; }
+                .spotlight-shop { font-size: 1.1em; color: #fff; font-weight: bold; max-width: 70%; }
+                .spotlight-xu { font-size: 3.5em; color: #ffff00; font-weight: 900; line-height: 1; text-shadow: 0 0 20px #ffeb3b; }
+                .spotlight-meta { font-size: 0.9em; color: #ddd; margin-top: 5px; }
                 .btn-spotlight {
-                    background: #ff5722; color: white; text-decoration: none; text-align: center;
-                    padding: 10px; border-radius: 6px; font-weight: bold; font-size: 1.2em; text-transform: uppercase;
-                    margin-top: 10px; animation: pulse 1.5s infinite;
+                    background: #fff; color: #d84315; text-decoration: none; text-align: center;
+                    padding: 12px; border-radius: 8px; font-weight: 900; font-size: 1.4em; text-transform: uppercase;
+                    margin-top: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
                 }
-                @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
-                /* PHẦN 2: LỊCH SỬ CLICKABLE */
-                .history-label { width: 100%; max-width: 500px; color: #777; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 5px; }
+                /* LỊCH SỬ */
+                .history-label { width: 100%; max-width: 500px; color: #777; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; border-bottom: 1px solid #333; padding-bottom: 5px; }
                 .history-container {
                     width: 100%; max-width: 500px; flex-grow: 1; overflow-y: auto;
                     background: #181818; border-radius: 8px;
@@ -109,13 +106,11 @@ app.get('/', (req, res) => {
             <div class="control-header">
                 <span style="color:#888; font-size:0.9em">Lọc Xu >=</span>
                 <input type="number" id="min-xu-input" class="input-xu" value="600" oninput="updateFilter()">
-                <button id="btn-sound" onclick="activateAudio()" style="margin-left:10px; background:none; border:none; cursor:pointer; font-size:1.2em" title="Bật loa">🔇</button>
+                <button id="btn-sound" onclick="activateAudio()" style="margin-left:10px; background:none; border:none; cursor:pointer; font-size:1.2em">🔇</button>
                 <button onclick="testVoice()" style="margin-left:10px; background:none; border:1px solid #444; color:#666; padding:2px 8px; border-radius:4px; cursor:pointer">Test</button>
             </div>
 
-            <div id="spotlight-section">
-                <div class="waiting-state">🕒 Chờ xíu nhaaa...</div>
-            </div>
+            <div id="spotlight-section"></div>
 
             <div class="history-label">Lịch sử (Click để vào)</div>
             <div class="history-container" id="history-list"></div>
@@ -125,58 +120,63 @@ app.get('/', (req, res) => {
                 let currentData = []; 
                 let userMinXu = 600; 
                 let audioOn = false;
+                let spotlightTimeout; // Biến để quản lý thời gian tắt
 
-                function activateAudio() { 
-                    playTing(); audioOn = true; 
-                    document.getElementById('btn-sound').innerText = '🔊';
-                }
-                
-                function updateFilter() { 
-                    userMinXu = parseInt(document.getElementById('min-xu-input').value) || 0; 
-                    renderUI(); 
-                }
+                function activateAudio() { playTing(); audioOn = true; document.getElementById('btn-sound').innerText = '🔊'; }
+                function updateFilter() { userMinXu = parseInt(document.getElementById('min-xu-input').value) || 0; renderUI(false); }
 
-                function renderUI() {
+                // Hàm renderUI có thêm tham số forceRender để kiểm soát
+                function renderUI(isNewData = true) {
                     const spotlight = document.getElementById('spotlight-section');
                     const historyList = document.getElementById('history-list');
                     const filteredList = currentData.filter(item => item.xu >= userMinXu);
 
-                    // SPOTLIGHT
+                    // 1. XỬ LÝ SPOTLIGHT (Chỉ hiện khi CÓ DỮ LIỆU MỚI)
                     if (filteredList.length > 0) {
                         const topItem = filteredList[0];
-                        const link = topItem.link || 'https://shopee.vn/live';
-                        
-                        // Dùng chuỗi cộng (không dùng backtick lồng nhau để tránh lỗi)
-                        let spotHtml = '<div class="active-state">';
-                        spotHtml += '<div class="spotlight-top">';
-                        spotHtml += '<div class="spotlight-shop">' + topItem.shop + '</div>';
-                        spotHtml += '<div class="spotlight-xu">' + topItem.xu + '</div>';
-                        spotHtml += '</div>';
-                        spotHtml += '<div class="spotlight-meta">' + topItem.meta + '</div>';
-                        spotHtml += '<a href="' + link + '" target="_blank" class="btn-spotlight">VÀO LIVE NGAY</a>';
-                        spotHtml += '</div>';
-                        
-                        spotlight.innerHTML = spotHtml;
+                        const currentSig = topItem.shop + topItem.xu + topItem.meta;
 
-                        const sig = topItem.shop + topItem.xu + topItem.meta;
-                        if (sig !== lastSignature) {
+                        // Nếu phát hiện tin mới khác với tin cũ
+                        if (currentSig !== lastSignature) {
+                            
+                            // Render nội dung
+                            let spotHtml = '<div class="active-state">';
+                            spotHtml += '<div class="spotlight-top">';
+                            spotHtml += '<div class="spotlight-shop">' + topItem.shop + '</div>';
+                            spotHtml += '<div class="spotlight-xu">' + topItem.xu + '</div>';
+                            spotHtml += '</div>';
+                            spotHtml += '<div class="spotlight-meta">' + topItem.meta + '</div>';
+                            spotHtml += '<a href="' + (topItem.link || 'https://shopee.vn/live') + '" target="_blank" class="btn-spotlight">VÀO LIVE NGAY</a>';
+                            spotHtml += '</div>';
+                            
+                            spotlight.innerHTML = spotHtml;
+                            
+                            // HIỆN NỔI LÊN
+                            spotlight.style.display = 'flex'; 
+
+                            // Âm thanh
                             if(audioOn) { playTing(); setTimeout(() => readXu(topItem.xu), 300); }
-                            lastSignature = sig;
+                            
+                            // Cập nhật chữ ký để không lặp lại
+                            lastSignature = currentSig;
+
+                            // HỦY hẹn giờ cũ (nếu có) và ĐẶT hẹn giờ tắt mới (1 giây)
+                            if (spotlightTimeout) clearTimeout(spotlightTimeout);
+                            spotlightTimeout = setTimeout(() => {
+                                spotlight.style.display = 'none'; // Ẩn đi sau 1s
+                                spotlight.innerHTML = ''; // Xóa nội dung cho nhẹ
+                            }, 1000); 
                         }
-                    } else {
-                        spotlight.innerHTML = '<div class="waiting-state">🕒 Chờ xíu nhaaa...</div>';
                     }
 
-                    // HISTORY
+                    // 2. XỬ LÝ LỊCH SỬ (Luôn hiện)
                     let listHtml = '';
                     if (filteredList.length === 0) {
                         listHtml = '<div style="padding:20px; text-align:center; color:#444">Không có tin >= ' + userMinXu + ' xu</div>';
                     } else {
                         for (let i = 0; i < filteredList.length; i++) {
                             const item = filteredList[i];
-                            const link = item.link || 'https://shopee.vn/live';
-                            
-                            listHtml += '<a href="' + link + '" target="_blank" class="history-item">';
+                            listHtml += '<a href="' + (item.link || 'https://shopee.vn/live') + '" target="_blank" class="history-item">';
                             listHtml += '<span class="h-xu">[' + item.xu + ' xu]</span>';
                             listHtml += '<span class="h-shop">' + item.shop + '</span>';
                             listHtml += '<span class="h-meta">' + item.meta + '</span>';
@@ -191,20 +191,11 @@ app.get('/', (req, res) => {
                     const osc = ctx.createOscillator(); const gain = ctx.createGain();
                     osc.connect(gain); gain.connect(ctx.destination);
                     osc.type = 'sine'; osc.frequency.setValueAtTime(1000, ctx.currentTime);
-                    gain.gain.setValueAtTime(0.5, ctx.currentTime); 
+                    gain.gain.setValueAtTime(0.8, ctx.currentTime); 
                     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.5);
                     osc.start(); osc.stop(ctx.currentTime+0.5);
                 }
-
-                function readXu(n) { 
-                    if('speechSynthesis' in window) { 
-                        window.speechSynthesis.cancel(); 
-                        const u = new SpeechSynthesisUtterance(n+" xu"); 
-                        u.lang='vi-VN'; u.rate=1.1; u.volume=1; 
-                        window.speechSynthesis.speak(u); 
-                    } 
-                }
-
+                function readXu(n) { if('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(n+" xu"); u.lang='vi-VN'; u.rate=1.1; u.volume=1; window.speechSynthesis.speak(u); } }
                 function testVoice() { playTing(); setTimeout(() => readXu(1234), 500); }
 
                 async function checkServer() {
@@ -222,6 +213,4 @@ app.get('/', (req, res) => {
     `);
 });
 
-app.listen(PORT, () => {
-    console.log('Server is running on port ' + PORT);
-});
+app.listen(PORT, () => { console.log('Server running on ' + PORT); });
