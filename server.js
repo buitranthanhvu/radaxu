@@ -42,7 +42,7 @@ app.get('/', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>RADA FINAL</title>
+            <title>RADA SELECT</title>
             <style>
                 body { 
                     background-color: #121212; color: #e0e0e0; font-family: sans-serif;
@@ -55,9 +55,19 @@ app.get('/', (req, res) => {
                     background: #1e1e1e; padding: 8px 20px; border-radius: 30px; border: 1px solid #333;
                     width: 100%; max-width: 500px; box-sizing: border-box;
                 }
-                .input-xu {
-                    background: #000; border: 1px solid #ff9800; color: #fff;
-                    padding: 5px; font-size: 16px; width: 60px; text-align: center; font-weight: bold; border-radius: 5px;
+                
+                /* --- THAY ĐỔI: STYLE CHO MENU CHỌN --- */
+                .select-xu {
+                    background: #000; 
+                    border: 1px solid #ff9800; 
+                    color: #fff;
+                    padding: 8px 15px; 
+                    font-size: 18px; /* Chữ to dễ đọc */
+                    font-weight: bold; 
+                    border-radius: 8px;
+                    cursor: pointer;
+                    outline: none;
+                    text-align: center;
                 }
                 
                 /* NÚT LOA */
@@ -122,9 +132,15 @@ app.get('/', (req, res) => {
         <body>
 
             <div class="control-header">
-                <div style="display:flex; align-items:center; gap:5px">
-                    <span style="color:#888; font-size:0.8em">Xu >=</span>
-                    <input type="number" id="min-xu-input" class="input-xu" value="600" oninput="updateFilter()">
+                <div style="display:flex; align-items:center; gap:10px">
+                    <span style="color:#888; font-size:0.9em">Lọc Xu >=</span>
+                    
+                    <select id="min-xu-input" class="select-xu" onchange="updateFilter()">
+                        <option value="500">500</option>
+                        <option value="600" selected>600</option>
+                        <option value="700">700</option>
+                        <option value="800">800</option>
+                    </select>
                 </div>
 
                 <button id="btn-sound" onclick="toggleSound()" title="Bật/Tắt đọc xu">🔇</button>
@@ -215,7 +231,6 @@ app.get('/', (req, res) => {
                     if('speechSynthesis' in window) { 
                         window.speechSynthesis.cancel(); 
                         const u = new SpeechSynthesisUtterance(n + " xu"); 
-                        // Giọng mặc định, không chọn
                         u.lang = 'vi-VN'; 
                         u.rate = 1.1; 
                         u.volume = 1; 
@@ -239,4 +254,3 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => { console.log('Server running on ' + PORT); });
-
