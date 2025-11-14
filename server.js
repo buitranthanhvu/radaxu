@@ -42,7 +42,7 @@ app.get('/', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>RADA FLASH 1S</title>
+            <title>RADA CỐ ĐỊNH KHUNG</title>
             <style>
                 body { 
                     background-color: #121212; color: #e0e0e0; font-family: sans-serif;
@@ -58,23 +58,32 @@ app.get('/', (req, res) => {
                     padding: 5px; font-size: 16px; width: 70px; text-align: center; font-weight: bold; border-radius: 5px;
                 }
 
-                /* SPOTLIGHT: Mặc định ẩn đi (display: none) */
+                /* --- SPOTLIGHT CỐ ĐỊNH --- */
                 #spotlight-section {
-                    display: none; /* <--- QUAN TRỌNG: Mặc định ẩn */
-                    width: 100%; max-width: 500px; height: 160px;
+                    /* Luôn hiển thị, không bao giờ ẩn */
+                    display: flex; 
+                    width: 100%; max-width: 500px; height: 160px; /* Chiều cao cố định */
                     background: #1e1e1e; border-radius: 12px; border: 1px solid #333;
                     margin-bottom: 20px; flex-direction: column; justify-content: center; align-items: center;
-                    box-shadow: 0 0 30px rgba(255, 87, 34, 0.8); overflow: hidden;
-                    animation: popIn 0.3s ease-out;
+                    overflow: hidden; transition: all 0.3s ease;
                 }
-                @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
+                /* Trạng thái 1: CHỜ (Màu xám im lìm) */
+                .waiting-state { 
+                    color: #555; font-size: 1.5em; display: flex; align-items: center; gap: 10px; 
+                    font-weight: bold; letter-spacing: 1px;
+                }
+
+                /* Trạng thái 2: CÓ XU (Flash lên) */
                 .active-state { 
                     width: 100%; height: 100%; padding: 15px; box-sizing: border-box;
                     display: flex; flex-direction: column; justify-content: space-between; 
-                    background: linear-gradient(135deg, #bf360c 0%, #1e1e1e 100%); /* Nền đỏ đậm hơn cho gắt */
+                    background: linear-gradient(135deg, #bf360c 0%, #1e1e1e 100%);
                     border: 2px solid #ff5722;
+                    animation: flashEffect 0.3s ease-out;
                 }
+                @keyframes flashEffect { from { opacity: 0.5; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
                 .spotlight-top { display: flex; justify-content: space-between; align-items: flex-start; }
                 .spotlight-shop { font-size: 1.1em; color: #fff; font-weight: bold; max-width: 70%; }
                 .spotlight-xu { font-size: 3.5em; color: #ffff00; font-weight: 900; line-height: 1; text-shadow: 0 0 20px #ffeb3b; }
@@ -110,7 +119,9 @@ app.get('/', (req, res) => {
                 <button onclick="testVoice()" style="margin-left:10px; background:none; border:1px solid #444; color:#666; padding:2px 8px; border-radius:4px; cursor:pointer">Test</button>
             </div>
 
-            <div id="spotlight-section"></div>
+            <div id="spotlight-section">
+                <div class="waiting-state">🕒 Chờ xíu nhaaa...</div>
+            </div>
 
             <div class="history-label">Lịch sử (Click để vào)</div>
             <div class="history-container" id="history-list"></div>
@@ -120,26 +131,25 @@ app.get('/', (req, res) => {
                 let currentData = []; 
                 let userMinXu = 600; 
                 let audioOn = false;
-                let spotlightTimeout; // Biến để quản lý thời gian tắt
+                let spotlightTimeout;
 
                 function activateAudio() { playTing(); audioOn = true; document.getElementById('btn-sound').innerText = '🔊'; }
-                function updateFilter() { userMinXu = parseInt(document.getElementById('min-xu-input').value) || 0; renderUI(false); }
+                function updateFilter() { userMinXu = parseInt(document.getElementById('min-xu-input').value) || 0; renderUI(); }
 
-                // Hàm renderUI có thêm tham số forceRender để kiểm soát
-                function renderUI(isNewData = true) {
+                function renderUI() {
                     const spotlight = document.getElementById('spotlight-section');
                     const historyList = document.getElementById('history-list');
                     const filteredList = currentData.filter(item => item.xu >= userMinXu);
 
-                    // 1. XỬ LÝ SPOTLIGHT (Chỉ hiện khi CÓ DỮ LIỆU MỚI)
+                    // --- LOGIC SPOTLIGHT ---
                     if (filteredList.length > 0) {
                         const topItem = filteredList[0];
                         const currentSig = topItem.shop + topItem.xu + topItem.meta;
 
-                        // Nếu phát hiện tin mới khác với tin cũ
+                        // Chỉ khi có tin MỚI TINH thì mới Flash lên
                         if (currentSig !== lastSignature) {
                             
-                            // Render nội dung
+                            // 1. Hiển thị giao diện "ACTIVE"
                             let spotHtml = '<div class="active-state">';
                             spotHtml += '<div class="spotlight-top">';
                             spotHtml += '<div class="spotlight-shop">' + topItem.shop + '</div>';
@@ -148,28 +158,24 @@ app.get('/', (req, res) => {
                             spotHtml += '<div class="spotlight-meta">' + topItem.meta + '</div>';
                             spotHtml += '<a href="' + (topItem.link || 'https://shopee.vn/live') + '" target="_blank" class="btn-spotlight">VÀO LIVE NGAY</a>';
                             spotHtml += '</div>';
-                            
                             spotlight.innerHTML = spotHtml;
-                            
-                            // HIỆN NỔI LÊN
-                            spotlight.style.display = 'flex'; 
 
-                            // Âm thanh
+                            // 2. Phát tiếng
                             if(audioOn) { playTing(); setTimeout(() => readXu(topItem.xu), 300); }
                             
-                            // Cập nhật chữ ký để không lặp lại
+                            // 3. Lưu dấu
                             lastSignature = currentSig;
 
-                            // HỦY hẹn giờ cũ (nếu có) và ĐẶT hẹn giờ tắt mới (1 giây)
+                            // 4. Hẹn giờ 1 giây sau thì quay về trạng thái "CHỜ"
                             if (spotlightTimeout) clearTimeout(spotlightTimeout);
                             spotlightTimeout = setTimeout(() => {
-                                spotlight.style.display = 'none'; // Ẩn đi sau 1s
-                                spotlight.innerHTML = ''; // Xóa nội dung cho nhẹ
+                                // Thay vì ẩn đi, ta đưa nó về trạng thái ban đầu
+                                spotlight.innerHTML = '<div class="waiting-state">🕒 Chờ xíu nhaaa...</div>';
                             }, 1000); 
                         }
                     }
 
-                    // 2. XỬ LÝ LỊCH SỬ (Luôn hiện)
+                    // --- LOGIC LỊCH SỬ ---
                     let listHtml = '';
                     if (filteredList.length === 0) {
                         listHtml = '<div style="padding:20px; text-align:center; color:#444">Không có tin >= ' + userMinXu + ' xu</div>';
