@@ -195,7 +195,7 @@ app.get('/', (req, res) => {
                     osc.start(); osc.stop(ctx.currentTime+0.5);
                 }
                 function readXu(n) { if('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(n+" xu"); u.lang='vi-VN'; u.rate=1.1; u.volume=1; window.speechSynthesis.speak(u); } }
-                function testVoice() { playTing(); setTimeout(() => readXu(999), 500); }
+                function testVoice() { playTing(); setTimeout(() => readXu(10000), 500); }
 
                 async function checkServer() {
                     try {
@@ -213,4 +213,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => { console.log('Server running on ' + PORT); });
+
 
