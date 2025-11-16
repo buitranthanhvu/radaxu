@@ -112,6 +112,18 @@ app.get('/', (req, res) => {
                     display: block; width: 100%; box-sizing: border-box; margin-top: 5px;
                 }
 
+                /* --- THÊM: STYLE CHO NÚT "BAY VÀO" KHI KHÔNG CÓ DỮ LIỆU --- */
+                .btn-spotlight-placeholder {
+                    background: #2a2a2a; /* Nền tối */
+                    color: #555; /* Chữ mờ */
+                    text-decoration: none; text-align: center;
+                    padding: 12px; border-radius: 8px; font-weight: 900; font-size: 1.3em; text-transform: uppercase;
+                    border: 1px dashed #444; /* Khung nét đứt */
+                    display: block; width: 100%; box-sizing: border-box; margin-top: 5px;
+                    cursor: default; /* Không cho phép click */
+                }
+
+
                 /* LỊCH SỬ */
                 .history-label { width: 100%; max-width: 500px; color: #777; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; border-bottom: 1px solid #333; padding-bottom: 5px; }
                 .history-container {
@@ -126,10 +138,8 @@ app.get('/', (req, res) => {
                 
                 .h-xu { color: #ffff00; font-weight: bold; min-width: 70px; margin-right: 10px; }
                 .h-shop { color: #fff; font-weight: 600; margin-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;}
-                
-                /* --- ĐÃ SỬA Ở ĐÂY: ĐỔI MÀU CHỮ META THÀNH TRẮNG SÁNG (#e0e0e0) --- */
                 .h-meta { 
-                    color: #e0e0e0; /* Trước là #666 giờ đổi thành màu sáng */
+                    color: #e0e0e0; 
                     font-size: 0.85em; 
                     margin-left: auto; 
                 }
@@ -153,7 +163,9 @@ app.get('/', (req, res) => {
             </div>
 
             <div id="spotlight-section">
-                <div class="waiting-state">🕒 Cô đơn trên Sofa</div>
+                <div class="waiting-state">
+                    <a href="#" onclick="return false;" class="btn-spotlight-placeholder">BAY VÀO</a>
+                </div>
             </div>
 
             <div class="history-label">Lịch sử (Click để vào)</div>
@@ -186,6 +198,7 @@ app.get('/', (req, res) => {
                     const historyList = document.getElementById('history-list');
                     const filteredList = currentData.filter(item => item.xu >= userMinXu);
 
+                    // SPOTLIGHT LOGIC
                     if (filteredList.length > 0) {
                         const topItem = filteredList[0];
                         const currentSig = topItem.shop + topItem.xu + topItem.meta;
@@ -209,11 +222,17 @@ app.get('/', (req, res) => {
 
                             if (spotlightTimeout) clearTimeout(spotlightTimeout);
                             spotlightTimeout = setTimeout(() => {
-                                spotlight.innerHTML = '<div class="waiting-state">🕒 Cô đơn trên Sofa</div>';
+                                // Khi hết thời gian, hiển thị lại placeholder
+                                spotlight.innerHTML = '<div class="waiting-state"><a href="#" onclick="return false;" class="btn-spotlight-placeholder">BAY VÀO</a></div>';
                             }, 1000); 
                         }
+                    } else {
+                        // Khi không có xu, luôn hiển thị placeholder
+                        spotlight.innerHTML = '<div class="waiting-state"><a href="#" onclick="return false;" class="btn-spotlight-placeholder">BAY VÀO</a></div>';
+                        lastSignature = ""; // Reset signature để khi có xu mới sẽ kích hoạt lại
                     }
 
+                    // HISTORY LOGIC
                     let listHtml = '';
                     if (filteredList.length === 0) {
                         listHtml = '<div style="padding:20px; text-align:center; color:#444">Không có tin >= ' + userMinXu + ' xu</div>';
@@ -223,7 +242,6 @@ app.get('/', (req, res) => {
                             listHtml += '<a href="' + (item.link || 'https://shopee.vn/live') + '" target="_blank" class="history-item">';
                             listHtml += '<span class="h-xu">[' + item.xu + ' xu]</span>';
                             listHtml += '<span class="h-shop">' + item.shop + '</span>';
-                            // Phần này sẽ hiển thị View và Thời gian
                             listHtml += '<span class="h-meta">' + item.meta + '</span>';
                             listHtml += '</a>';
                         }
