@@ -49,6 +49,7 @@ app.get('/', (req, res) => {
                     margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; 
                     height: 100vh; box-sizing: border-box; overflow: hidden;
                 }
+
                 /* HEADER GỌN GÀNG */
                 .control-header {
                     display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: center; margin-bottom: 15px;
@@ -56,13 +57,12 @@ app.get('/', (req, res) => {
                     width: 100%; max-width: 500px; box-sizing: border-box;
                 }
                 
-                /* --- THAY ĐỔI: STYLE CHO MENU CHỌN --- */
                 .select-xu {
                     background: #000; 
                     border: 1px solid #ff9800; 
                     color: #fff;
                     padding: 8px 15px; 
-                    font-size: 18px; /* Chữ to dễ đọc */
+                    font-size: 18px; 
                     font-weight: bold; 
                     border-radius: 8px;
                     cursor: pointer;
@@ -70,14 +70,13 @@ app.get('/', (req, res) => {
                     text-align: center;
                 }
                 
-                /* NÚT LOA */
                 #btn-sound {
                     background: none; border: none; cursor: pointer; font-size: 1.5em;
                     color: #666; transition: all 0.2s; display: flex; align-items: center;
                 }
                 #btn-sound:hover { transform: scale(1.1); }
 
-                /* --- SPOTLIGHT FIX MOBILE --- */
+                /* SPOTLIGHT */
                 #spotlight-section {
                     display: flex; 
                     width: 100%; max-width: 500px; 
@@ -124,9 +123,16 @@ app.get('/', (req, res) => {
                     font-size: 0.95em; color: #ccc; text-decoration: none; transition: background 0.2s; cursor: pointer;
                 }
                 .history-item:hover { background: #252525; }
+                
                 .h-xu { color: #ffff00; font-weight: bold; min-width: 70px; margin-right: 10px; }
                 .h-shop { color: #fff; font-weight: 600; margin-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;}
-                .h-meta { color: #666; font-size: 0.85em; margin-left: auto; }
+                
+                /* --- ĐÃ SỬA Ở ĐÂY: ĐỔI MÀU CHỮ META THÀNH TRẮNG SÁNG (#e0e0e0) --- */
+                .h-meta { 
+                    color: #e0e0e0; /* Trước là #666 giờ đổi thành màu sáng */
+                    font-size: 0.85em; 
+                    margin-left: auto; 
+                }
             </style>
         </head>
         <body>
@@ -157,10 +163,9 @@ app.get('/', (req, res) => {
                 let lastSignature = ""; 
                 let currentData = []; 
                 let userMinXu = 600; 
-                let audioOn = false; // Mặc định tắt
+                let audioOn = false; 
                 let spotlightTimeout;
 
-                // --- HÀM BẬT/TẮT ÂM THANH ---
                 function toggleSound() {
                     audioOn = !audioOn;
                     const btn = document.getElementById('btn-sound');
@@ -181,7 +186,6 @@ app.get('/', (req, res) => {
                     const historyList = document.getElementById('history-list');
                     const filteredList = currentData.filter(item => item.xu >= userMinXu);
 
-                    // SPOTLIGHT LOGIC
                     if (filteredList.length > 0) {
                         const topItem = filteredList[0];
                         const currentSig = topItem.shop + topItem.xu + topItem.meta;
@@ -210,7 +214,6 @@ app.get('/', (req, res) => {
                         }
                     }
 
-                    // HISTORY LOGIC
                     let listHtml = '';
                     if (filteredList.length === 0) {
                         listHtml = '<div style="padding:20px; text-align:center; color:#444">Không có tin >= ' + userMinXu + ' xu</div>';
@@ -220,6 +223,7 @@ app.get('/', (req, res) => {
                             listHtml += '<a href="' + (item.link || 'https://shopee.vn/live') + '" target="_blank" class="history-item">';
                             listHtml += '<span class="h-xu">[' + item.xu + ' xu]</span>';
                             listHtml += '<span class="h-shop">' + item.shop + '</span>';
+                            // Phần này sẽ hiển thị View và Thời gian
                             listHtml += '<span class="h-meta">' + item.meta + '</span>';
                             listHtml += '</a>';
                         }
