@@ -86,9 +86,26 @@ app.get('/', (req, res) => {
                     overflow: hidden; transition: all 0.3s ease;
                 }
 
+                /* --- CẬP NHẬT CSS CHO WAITING STATE --- */
                 .waiting-state { 
-                    color: #555; font-size: 1.5em; display: flex; align-items: center; gap: 10px; 
-                    font-weight: bold; letter-spacing: 1px; padding: 20px;
+                    width: 100%; padding: 20px; box-sizing: border-box;
+                    display: flex; flex-direction: column; /* Xếp dọc */
+                    align-items: center; justify-content: center;
+                }
+                
+                .waiting-text {
+                    color: #555; font-size: 1.5em; font-weight: bold; letter-spacing: 1px;
+                    margin-bottom: 15px; /* Khoảng cách với khung bên dưới */
+                }
+
+                /* Khung rỗng chỉ có viền để định vị */
+                .waiting-frame {
+                    width: 100%;
+                    height: 50px; /* Chiều cao tương đương nút thật */
+                    border: 2px dashed #333; /* Viền nét đứt màu tối */
+                    border-radius: 8px;
+                    box-sizing: border-box;
+                    background: transparent;
                 }
 
                 .active-state { 
@@ -111,18 +128,6 @@ app.get('/', (req, res) => {
                     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
                     display: block; width: 100%; box-sizing: border-box; margin-top: 5px;
                 }
-
-                /* --- THÊM: STYLE CHO NÚT "BAY VÀO" KHI KHÔNG CÓ DỮ LIỆU --- */
-                .btn-spotlight-placeholder {
-                    background: #2a2a2a; /* Nền tối */
-                    color: #555; /* Chữ mờ */
-                    text-decoration: none; text-align: center;
-                    padding: 12px; border-radius: 8px; font-weight: 900; font-size: 1.3em; text-transform: uppercase;
-                    border: 1px dashed #444; /* Khung nét đứt */
-                    display: block; width: 100%; box-sizing: border-box; margin-top: 5px;
-                    cursor: default; /* Không cho phép click */
-                }
-
 
                 /* LỊCH SỬ */
                 .history-label { width: 100%; max-width: 500px; color: #777; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; border-bottom: 1px solid #333; padding-bottom: 5px; }
@@ -164,7 +169,8 @@ app.get('/', (req, res) => {
 
             <div id="spotlight-section">
                 <div class="waiting-state">
-                    <a href="#" onclick="return false;" class="btn-spotlight-placeholder">BAY VÀO</a>
+                    <div class="waiting-text">🕒 Cô đơn trên Sofa</div>
+                    <div class="waiting-frame"></div>
                 </div>
             </div>
 
@@ -177,6 +183,14 @@ app.get('/', (req, res) => {
                 let userMinXu = 600; 
                 let audioOn = false; 
                 let spotlightTimeout;
+
+                // Tạo HTML cho trạng thái chờ để dùng lại nhiều lần
+                const WAITING_HTML = \`
+                    <div class="waiting-state">
+                        <div class="waiting-text">🕒 Cô đơn trên Sofa</div>
+                        <div class="waiting-frame"></div>
+                    </div>
+                \`;
 
                 function toggleSound() {
                     audioOn = !audioOn;
@@ -222,14 +236,14 @@ app.get('/', (req, res) => {
 
                             if (spotlightTimeout) clearTimeout(spotlightTimeout);
                             spotlightTimeout = setTimeout(() => {
-                                // Khi hết thời gian, hiển thị lại placeholder
-                                spotlight.innerHTML = '<div class="waiting-state"><a href="#" onclick="return false;" class="btn-spotlight-placeholder">BAY VÀO</a></div>';
+                                // Quay về trạng thái chờ (có chữ + khung rỗng)
+                                spotlight.innerHTML = WAITING_HTML;
                             }, 1000); 
                         }
                     } else {
-                        // Khi không có xu, luôn hiển thị placeholder
-                        spotlight.innerHTML = '<div class="waiting-state"><a href="#" onclick="return false;" class="btn-spotlight-placeholder">BAY VÀO</a></div>';
-                        lastSignature = ""; // Reset signature để khi có xu mới sẽ kích hoạt lại
+                        // Nếu không có xu, luôn hiển thị trạng thái chờ
+                        spotlight.innerHTML = WAITING_HTML;
+                        lastSignature = ""; 
                     }
 
                     // HISTORY LOGIC
