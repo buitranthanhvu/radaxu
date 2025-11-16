@@ -86,26 +86,33 @@ app.get('/', (req, res) => {
                     overflow: hidden; transition: all 0.3s ease;
                 }
 
-                /* --- CẬP NHẬT CSS CHO WAITING STATE --- */
+                /* --- CẬP NHẬT CSS CHO WAITING STATE ĐỂ ĐẨY KHUNG XUỐNG ĐÁY --- */
                 .waiting-state { 
-                    width: 100%; padding: 20px; box-sizing: border-box;
-                    display: flex; flex-direction: column; /* Xếp dọc */
-                    align-items: center; justify-content: center;
+                    width: 100%; 
+                    height: 100%; /* Chiếm toàn bộ chiều cao cha */
+                    flex-grow: 1;
+                    padding: 20px 15px; /* Padding giống hệt Active State */
+                    box-sizing: border-box;
+                    display: flex; 
+                    flex-direction: column; 
                 }
                 
                 .waiting-text {
                     color: #555; font-size: 1.5em; font-weight: bold; letter-spacing: 1px;
-                    margin-bottom: 15px; /* Khoảng cách với khung bên dưới */
+                    /* QUAN TRỌNG: flex-grow: 1 sẽ đẩy phần tử bên dưới (khung) xuống đáy */
+                    flex-grow: 1; 
+                    display: flex; align-items: center; justify-content: center;
                 }
 
-                /* Khung rỗng chỉ có viền để định vị */
+                /* Khung rỗng chỉ có viền */
                 .waiting-frame {
                     width: 100%;
-                    height: 50px; /* Chiều cao tương đương nút thật */
-                    border: 2px dashed #333; /* Viền nét đứt màu tối */
+                    height: 52px; /* Chiều cao khớp với nút thật (bao gồm padding/font) */
+                    border: 2px dashed #333; 
                     border-radius: 8px;
                     box-sizing: border-box;
                     background: transparent;
+                    margin-top: 10px; /* Khoảng cách nhỏ với text phía trên */
                 }
 
                 .active-state { 
@@ -184,7 +191,7 @@ app.get('/', (req, res) => {
                 let audioOn = false; 
                 let spotlightTimeout;
 
-                // Tạo HTML cho trạng thái chờ để dùng lại nhiều lần
+                // CHÚ Ý: PHẦN NÀY GIỮ NGUYÊN STRUTURE HTML WAITING
                 const WAITING_HTML = \`
                     <div class="waiting-state">
                         <div class="waiting-text">🕒 Cô đơn trên Sofa</div>
@@ -236,12 +243,10 @@ app.get('/', (req, res) => {
 
                             if (spotlightTimeout) clearTimeout(spotlightTimeout);
                             spotlightTimeout = setTimeout(() => {
-                                // Quay về trạng thái chờ (có chữ + khung rỗng)
                                 spotlight.innerHTML = WAITING_HTML;
                             }, 1000); 
                         }
                     } else {
-                        // Nếu không có xu, luôn hiển thị trạng thái chờ
                         spotlight.innerHTML = WAITING_HTML;
                         lastSignature = ""; 
                     }
