@@ -86,12 +86,11 @@ app.get('/', (req, res) => {
                     overflow: hidden; transition: all 0.3s ease;
                 }
 
-                /* --- CẬP NHẬT CSS CHO WAITING STATE ĐỂ ĐẨY KHUNG XUỐNG ĐÁY --- */
                 .waiting-state { 
                     width: 100%; 
-                    height: 100%; /* Chiếm toàn bộ chiều cao cha */
+                    height: 100%; 
                     flex-grow: 1;
-                    padding: 20px 15px; /* Padding giống hệt Active State */
+                    padding: 20px 15px; 
                     box-sizing: border-box;
                     display: flex; 
                     flex-direction: column; 
@@ -99,20 +98,20 @@ app.get('/', (req, res) => {
                 
                 .waiting-text {
                     color: #555; font-size: 1.5em; font-weight: bold; letter-spacing: 1px;
-                    /* QUAN TRỌNG: flex-grow: 1 sẽ đẩy phần tử bên dưới (khung) xuống đáy */
                     flex-grow: 1; 
                     display: flex; align-items: center; justify-content: center;
                 }
 
-                /* Khung rỗng chỉ có viền */
+                /* --- ĐÃ SỬA Ở ĐÂY: ĐỔI MÀU VIỀN THÀNH TRẮNG SÁNG (#e0e0e0) --- */
                 .waiting-frame {
                     width: 100%;
-                    height: 52px; /* Chiều cao khớp với nút thật (bao gồm padding/font) */
-                    border: 2px dashed #333; 
+                    height: 52px; 
+                    /* Đổi màu viền từ #333 sang #e0e0e0 */
+                    border: 2px dashed #e0e0e0; 
                     border-radius: 8px;
                     box-sizing: border-box;
                     background: transparent;
-                    margin-top: 10px; /* Khoảng cách nhỏ với text phía trên */
+                    margin-top: 10px; 
                 }
 
                 .active-state { 
@@ -191,7 +190,6 @@ app.get('/', (req, res) => {
                 let audioOn = false; 
                 let spotlightTimeout;
 
-                // CHÚ Ý: PHẦN NÀY GIỮ NGUYÊN STRUTURE HTML WAITING
                 const WAITING_HTML = \`
                     <div class="waiting-state">
                         <div class="waiting-text">🕒 Cô đơn trên Sofa</div>
@@ -219,7 +217,6 @@ app.get('/', (req, res) => {
                     const historyList = document.getElementById('history-list');
                     const filteredList = currentData.filter(item => item.xu >= userMinXu);
 
-                    // SPOTLIGHT LOGIC
                     if (filteredList.length > 0) {
                         const topItem = filteredList[0];
                         const currentSig = topItem.shop + topItem.xu + topItem.meta;
@@ -251,7 +248,6 @@ app.get('/', (req, res) => {
                         lastSignature = ""; 
                     }
 
-                    // HISTORY LOGIC
                     let listHtml = '';
                     if (filteredList.length === 0) {
                         listHtml = '<div style="padding:20px; text-align:center; color:#444">Không có tin >= ' + userMinXu + ' xu</div>';
@@ -271,7 +267,7 @@ app.get('/', (req, res) => {
                 function readXu(n) { 
                     if('speechSynthesis' in window) { 
                         window.speechSynthesis.cancel(); 
-                        const u = new SpeechSynthesisUtterance(n + " xu"); 
+                        const u = new SpeechSynthesisSUtterance(n + " xu"); 
                         u.lang = 'vi-VN'; 
                         u.rate = 1.1; 
                         u.volume = 1; 
