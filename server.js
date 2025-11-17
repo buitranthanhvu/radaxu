@@ -267,7 +267,7 @@ app.get('/', (req, res) => {
                 function readXu(n) { 
                     if('speechSynthesis' in window) { 
                         window.speechSynthesis.cancel(); 
-                        const u = new SpeechSynthesisSUtterance(n + " xu"); 
+                        const u = new SpeechSynthesisUtterance(n + " xu"); 
                         u.lang = 'vi-VN'; 
                         u.rate = 1.1; 
                         u.volume = 1; 
@@ -291,3 +291,4 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => { console.log('Server running on ' + PORT); });
+
